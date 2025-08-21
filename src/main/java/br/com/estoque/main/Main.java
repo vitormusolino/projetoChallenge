@@ -11,7 +11,7 @@ public class Main {
         Produto produto = new Produto(
                 "Agulha",
                 "Agulhas para exame de sangue",
-                "7891234567890",
+                "000",
                 LocalDate.of(2027,02,01),
                 "UN",
                 5

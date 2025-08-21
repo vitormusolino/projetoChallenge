@@ -10,8 +10,8 @@ import java.sql.Statement;
 
 public class ProdutoDAO {
     public void inserir(Produto produto) {
-        String sql = "INSERT INTO PRODUTOS (NOME,DESCRICAO,CODIGO_BARRAS,VALIDADE,UNIDADE,QUANTIDADE_MINIMA,QUANTIDADE)" +
-                     "VALUES(?,?,?,?,?,?,?)" ;
+        String sql = "INSERT INTO PRODUTOS (NOME,DESCRICAO,CODIGO_BARRAS,VALIDADE,UNIDADE,QUANTIDADE_MINIMA)" +
+                     "VALUES(?,?,?,?,?,?)" ;
 
         try(Connection conn = ConexaoBD.getConnection();
             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);) {
