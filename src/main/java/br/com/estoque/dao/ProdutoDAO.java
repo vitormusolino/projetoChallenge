@@ -62,4 +62,21 @@ public class ProdutoDAO {
         }
         return null;
     }
+
+    public boolean excluirProduto(int idProduto){
+        String sql = "DELETE FROM PRODUTOS WHERE ID_PRODUTO = ?";
+
+        try (Connection conn = ConexaoBD.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)){
+
+            stmt.setInt(1, idProduto);
+            int linhasAfetadas = stmt.executeUpdate();
+
+            return linhasAfetadas > 0;
+
+        }catch (SQLException e){
+            System.out.println("Erro ao excluir produto: " + e.getMessage());
+            return false;
+        }
+    }
 }

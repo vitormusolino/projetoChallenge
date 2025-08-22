@@ -18,6 +18,15 @@ public class Main {
         );
 
         ProdutoDAO produtoDAO = new ProdutoDAO();
-        System.out.println(produtoDAO.consultarPorId(23));
+        produtoDAO.inserir(produto);
+        //System.out.println(produtoDAO.consultarPorId());
+
+        //boolean excluido = produtoDAO.excluirProduto(22);
+
+        //if (excluido) {
+        //    System.out.println("Produto excluído com sucesso!");
+        //} else {
+        //    System.out.println("Nenhum produto encontrado para excluir.");
+        //}
     }
 }
