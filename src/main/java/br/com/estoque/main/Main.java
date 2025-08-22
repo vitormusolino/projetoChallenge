@@ -9,15 +9,15 @@ import java.time.LocalDate;
 public class Main {
     public static void main(String[] args) {
         Produto produto = new Produto(
-                "Agulha",
-                "Agulhas para exame de sangue",
-                "000",
-                LocalDate.of(2027,02,01),
-                "UN",
-                5
+                "Papel higienico",
+                "Papel higienico para limpeza",
+                "1234567890123",
+                LocalDate.of(2027,8,15),
+                "CX",
+                10
         );
 
         ProdutoDAO produtoDAO = new ProdutoDAO();
-        produtoDAO.inserir(produto);
+        System.out.println(produtoDAO.consultarPorId(23));
     }
 }
