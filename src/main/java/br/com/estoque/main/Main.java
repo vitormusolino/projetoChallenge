@@ -8,25 +8,22 @@ import java.time.LocalDate;
 
 public class Main {
     public static void main(String[] args) {
-        Produto produto = new Produto(
-                "Papel higienico",
-                "Papel higienico para limpeza",
-                "1234567890123",
-                LocalDate.of(2027,8,15),
-                "CX",
-                10
-        );
+
 
         ProdutoDAO produtoDAO = new ProdutoDAO();
-        produtoDAO.inserir(produto);
-        //System.out.println(produtoDAO.consultarPorId());
+        System.out.println(produtoDAO.consultarPorId(24));
 
-        //boolean excluido = produtoDAO.excluirProduto(22);
+        ProdutoDAO dao = new ProdutoDAO();
 
-        //if (excluido) {
-        //    System.out.println("Produto excluído com sucesso!");
-        //} else {
-        //    System.out.println("Nenhum produto encontrado para excluir.");
-        //}
-    }
-}
+        Produto p = dao.consultarPorId(24);
+        if (p != null) {
+            p.setNome("Papel para limpeza ( Atualizado )");
+            p.setQuantidadeMinima(20);
+            boolean ok = dao.atualizar(p);
+            System.out.println(ok ? "Atualizado com sucesso!" : "Nada foi atualizado.");
+        } else {
+            System.out.println("Produto não encontrado.");
+        }
+
+        produtoDAO.consultarPorId(24);
+}}

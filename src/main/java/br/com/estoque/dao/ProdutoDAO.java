@@ -79,4 +79,59 @@ public class ProdutoDAO {
             return false;
         }
     }
+
+    public boolean atualizar(Produto p){
+        if (p.getIdProduto() == null || p.getIdProduto() <= 0) {
+            throw new IllegalArgumentException("ID do produto inválido para atualização.");
+        }
+
+        String sql = """
+            UPDATE PRODUTOS
+               SET NOME = ?, DESCRICAO = ?, CODIGO_BARRAS = ?, VALIDADE = ?, UNIDADE = ?, QUANTIDADE_MINIMA = ?
+             WHERE ID_PRODUTO = ?
+        """;
+        Connection conn = null;
+
+        try{
+            conn = ConexaoBD.getConnection();
+
+            try(PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+
+                stmt.setString(1, p.getNome());
+                stmt.setString(2, p.getDescricao());
+                stmt.setString(3, p.getCodigoBarras());
+
+                if (p.getValidade() != null) {
+                    stmt.setDate(4, Date.valueOf(p.getValidade()));
+                } else {
+                    stmt.setNull(4, Types.DATE);
+                }
+
+                stmt.setString(5, p.getUnidade());
+                stmt.setInt(6, p.getQuantidadeMinima());
+                stmt.setInt(7, p.getIdProduto());
+
+                int linhas = stmt.executeUpdate();
+
+                if (!conn.getAutoCommit()) conn.commit();
+
+                return linhas > 0;
+            }
+
+        }catch (SQLException e) {
+            if (conn != null) {
+                try { if (!conn.getAutoCommit()) conn.rollback(); } catch (SQLException ignored) {}
+            }
+            if (e.getErrorCode() == 1) {
+                System.out.println("Código de barras já cadastrado para outro produto.");
+            } else {
+                System.out.println("Erro ao atualizar produto: " + e.getMessage());
+            }
+            return false;
+        } finally {
+            ConexaoBD.close(conn);
+        }
+    }
 }
+
