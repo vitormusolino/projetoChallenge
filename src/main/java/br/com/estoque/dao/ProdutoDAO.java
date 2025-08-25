@@ -2,8 +2,9 @@ package br.com.estoque.dao;
 
 import br.com.estoque.conexao.ConexaoBD;
 import br.com.estoque.model.Produto;
-
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ProdutoDAO {
     public void inserir(Produto produto) {
@@ -132,6 +133,38 @@ public class ProdutoDAO {
         } finally {
             ConexaoBD.close(conn);
         }
+    }
+
+    public List<Produto> listarTodos(){
+        ArrayList<Produto> produtos = new ArrayList<>();
+
+        String sql = "SELECT ID_PRODUTO, NOME, DESCRICAO, CODIGO_BARRAS, VALIDADE, UNIDADE, QUANTIDADE_MINIMA FROM PRODUTOS";
+
+        try(Connection conn = ConexaoBD.getConnection();
+            PreparedStatement stmt= conn.prepareStatement(sql);
+            ResultSet rs = stmt.executeQuery();){
+
+            while(rs.next()){
+                Produto p = new Produto();
+                p.setIdProduto(rs.getInt("ID_PRODUTO"));
+                p.setNome(rs.getString("NOME"));
+                p.setDescricao(rs.getString("DESCRICAO"));
+                p.setCodigoBarras(rs.getString("CODIGO_BARRAS"));
+
+                Date validade = rs.getDate("VALIDADE");
+                if (validade != null) {
+                    p.setValidade(validade.toLocalDate());
+                }
+
+                p.setUnidade(rs.getString("UNIDADE"));
+                p.setQuantidadeMinima(rs.getInt("QUANTIDADE_MINIMA"));
+
+                produtos.add(p);
+            }
+        }catch (SQLException e){
+            System.out.println("Erro ao listar: " + e.getMessage());
+        }
+        return produtos;
     }
 }
 

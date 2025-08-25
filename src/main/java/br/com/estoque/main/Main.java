@@ -3,27 +3,17 @@ package br.com.estoque.main;
 
 import br.com.estoque.dao.ProdutoDAO;
 import br.com.estoque.model.Produto;
-
-import java.time.LocalDate;
+import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
 
 
-        ProdutoDAO produtoDAO = new ProdutoDAO();
-        System.out.println(produtoDAO.consultarPorId(24));
-
         ProdutoDAO dao = new ProdutoDAO();
+        List<Produto> lista = dao.listarTodos();
 
-        Produto p = dao.consultarPorId(24);
-        if (p != null) {
-            p.setNome("Papel para limpeza ( Atualizado )");
-            p.setQuantidadeMinima(20);
-            boolean ok = dao.atualizar(p);
-            System.out.println(ok ? "Atualizado com sucesso!" : "Nada foi atualizado.");
-        } else {
-            System.out.println("Produto não encontrado.");
+        for (Produto p : lista) {
+            System.out.println(p.getIdProduto() + " - " + p.getNome() + " (" + p.getCodigoBarras() + ")");
         }
 
-        produtoDAO.consultarPorId(24);
-}}
+    }}
