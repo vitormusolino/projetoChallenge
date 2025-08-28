@@ -4,11 +4,13 @@ public class Local {
 
     private Integer idLocal;
     private String nomeLocal;
+    private String descricao;
 
     public Local(){}
 
-    public Local(String nomeLocal){
+    public Local(String nomeLocal, String descricao){
         this.nomeLocal = nomeLocal;
+        this.descricao = descricao;
     }
 
     public Integer getIdLocal() {
@@ -27,8 +29,19 @@ public class Local {
         this.nomeLocal = nomeLocal;
     }
 
+    public String getDescricao() {
+        return descricao;
+    }
+
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
+    }
+
     @Override
     public String toString() {
-        return "Local{" + "idLocal= " + idLocal + "nomeLocal= " + nomeLocal + "}";
+        return "Local{" + "idLocal= " + idLocal +
+                "; nomeLocal= " + nomeLocal +
+                "; descricao=" + descricao +
+                "}";
     }
 }

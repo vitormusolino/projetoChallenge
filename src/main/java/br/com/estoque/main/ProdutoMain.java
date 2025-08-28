@@ -5,7 +5,7 @@ import br.com.estoque.dao.ProdutoDAO;
 import br.com.estoque.model.Produto;
 import java.util.List;
 
-public class Main {
+public class ProdutoMain {
     public static void main(String[] args) {
 
 
