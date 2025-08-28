@@ -2,11 +2,9 @@ package br.com.estoque.dao;
 
 import br.com.estoque.conexao.ConexaoBD;
 import br.com.estoque.model.Local;
+import br.com.estoque.model.Produto;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
 public class LocalDAO {
 
@@ -25,5 +23,32 @@ public class LocalDAO {
         }catch (SQLException e){
             System.out.println("Erro ao inserir local: " + e.getMessage());
         }
+    }
+
+    public Local consultarPorId(int idLocal){
+        String sql = """
+            SELECT ID_LOCAL, NOME, DESCRICAO
+            FROM LOCAIS
+            WHERE ID_LOCAL = ?
+        """;
+
+        try (Connection conn = ConexaoBD.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, idLocal);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Local l = new Local();
+                    l.setIdLocal(rs.getInt("ID_LOCAL"));
+                    l.setNomeLocal(rs.getString("NOME"));
+                    l.setDescricao(rs.getString("DESCRICAO"));
+                    return l;
+                }
+            }
+        } catch (SQLException e){
+            System.out.println("Erro ao consultar local: " + e.getMessage());
+        }
+        return null;
     }
 }

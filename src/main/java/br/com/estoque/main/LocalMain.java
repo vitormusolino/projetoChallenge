@@ -9,7 +9,9 @@ public class LocalMain {
         Local local = new Local("Sala de exame 3", "Sala para exames de sangue");
         LocalDAO localDAO = new LocalDAO();
 
-        localDAO.inserir(local);
+        System.out.println(localDAO.consultarPorId(1));
+        System.out.println(localDAO.consultarPorId(2));
+        System.out.println(localDAO.consultarPorId(3));
 
     }
 }
