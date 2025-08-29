@@ -5,6 +5,8 @@ import br.com.estoque.model.Local;
 import br.com.estoque.model.Produto;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class LocalDAO {
 
@@ -50,5 +52,45 @@ public class LocalDAO {
             System.out.println("Erro ao consultar local: " + e.getMessage());
         }
         return null;
+    }
+
+    public boolean excluirLocal(int idLocal){
+        String sql = "DELETE FROM LOCAIS WHERE ID_LOCAL = ?";
+
+        try (Connection conn = ConexaoBD.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)){
+
+            stmt.setInt(1, idLocal);
+            int linhasAfetadas = stmt.executeUpdate();
+            System.out.println("Excluido!");
+            return linhasAfetadas > 0;
+
+        }catch (SQLException e){
+            System.out.println("Erro ao excluir local: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public List<Local> listarTodos(){
+        ArrayList<Local> locais = new ArrayList<>();
+
+        String sql = "SELECT ID_LOCAL, NOME, DESCRICAO FROM LOCAIS";
+
+        try(Connection conn = ConexaoBD.getConnection();
+            PreparedStatement stmt= conn.prepareStatement(sql);
+            ResultSet rs = stmt.executeQuery();){
+
+            while(rs.next()){
+                Local l = new Local();
+                l.setIdLocal(rs.getInt("ID_LOCAL"));
+                l.setNomeLocal(rs.getString("NOME"));
+                l.setDescricao(rs.getString("DESCRICAO"));
+
+                locais.add(l);
+            }
+        }catch (SQLException e){
+            System.out.println("Erro ao listar: " + e.getMessage());
+        }
+        return locais;
     }
 }

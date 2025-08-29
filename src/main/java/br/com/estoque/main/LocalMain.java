@@ -13,5 +13,7 @@ public class LocalMain {
         System.out.println(localDAO.consultarPorId(2));
         System.out.println(localDAO.consultarPorId(3));
 
+
+        System.out.println(localDAO.listarTodos());
     }
 }
