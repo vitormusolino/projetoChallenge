@@ -54,6 +54,33 @@ public class LocalDAO {
         return null;
     }
 
+    public Local consultarPorNome(String nomeLocal){
+        String sql = """
+            SELECT ID_LOCAL, NOME, DESCRICAO
+            FROM LOCAIS
+            WHERE NOME = ?
+        """;
+
+        try (Connection conn = ConexaoBD.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, nomeLocal);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Local l = new Local();
+                    l.setIdLocal(rs.getInt("ID_LOCAL"));
+                    l.setNomeLocal(rs.getString("NOME"));
+                    l.setDescricao(rs.getString("DESCRICAO"));
+                    return l;
+                }
+            }
+        } catch (SQLException e){
+            System.out.println("Erro ao consultar local: " + e.getMessage());
+        }
+        return null;
+    }
+
     public boolean excluirLocal(int idLocal){
         String sql = "DELETE FROM LOCAIS WHERE ID_LOCAL = ?";
 

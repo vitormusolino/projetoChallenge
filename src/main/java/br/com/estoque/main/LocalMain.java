@@ -20,5 +20,8 @@ public class LocalMain {
 
         localDAO.atualizar(localAtt);
         System.out.println(localDAO.listarTodos());
+
+
+        System.out.println(localDAO.consultarPorNome("Almoxarifado"));
     }
 }
