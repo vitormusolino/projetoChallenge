@@ -71,6 +71,23 @@ public class LocalDAO {
         }
     }
 
+    public boolean atualizar(Local local) {
+        String sql = "UPDATE LOCAIS SET NOME = ?, DESCRICAO = ? WHERE ID_LOCAL = ?";
+        try (Connection conn = ConexaoBD.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, local.getNomeLocal());
+            stmt.setString(2, local.getDescricao());
+            stmt.setInt(3, local.getIdLocal());
+
+            int linhasAfetadas = stmt.executeUpdate();
+            return linhasAfetadas > 0;
+        } catch (SQLException e) {
+            System.out.println("Erro ao atualizar local: " + e.getMessage());
+            return false;
+        }
+    }
+
     public List<Local> listarTodos(){
         ArrayList<Local> locais = new ArrayList<>();
 

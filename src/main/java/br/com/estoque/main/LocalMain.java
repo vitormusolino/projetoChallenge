@@ -13,7 +13,12 @@ public class LocalMain {
         System.out.println(localDAO.consultarPorId(2));
         System.out.println(localDAO.consultarPorId(3));
 
+        Local localAtt = new Local();
+        localAtt.setIdLocal(23);
+        localAtt.setNomeLocal("Sala de exame 3");
+        localAtt.setDescricao("Sala para exames de Ultrassom");
 
+        localDAO.atualizar(localAtt);
         System.out.println(localDAO.listarTodos());
     }
 }
