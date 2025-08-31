@@ -2,7 +2,6 @@ package br.com.estoque.dao;
 
 import br.com.estoque.conexao.ConexaoBD;
 import br.com.estoque.model.Local;
-import br.com.estoque.model.Produto;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -10,24 +9,36 @@ import java.util.List;
 
 public class LocalDAO {
 
-    public void inserir(Local local) {
-        String sql = "INSERT INTO LOCAIS (NOME,DESCRICAO)" +
-                "VALUES(?,?)" ;
+    public boolean inserir(Local local) {
+        if (consultarSeExiste(local.getNomeLocal())) {
+            return false;
+        }
 
-        try(Connection conn = ConexaoBD.getConnection();
-            PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        String sql = "INSERT INTO LOCAIS (NOME, DESCRICAO) VALUES (?, ?)";
+
+        try (Connection conn = ConexaoBD.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             stmt.setString(1, local.getNomeLocal());
             stmt.setString(2, local.getDescricao());
-            stmt.executeUpdate();
 
-            System.out.println("Local inserido com sucesso!");
-        }catch (SQLException e){
+            int linhasAfetadas = stmt.executeUpdate();
+
+            if (linhasAfetadas > 0) {
+                try (ResultSet rs = stmt.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        local.setIdLocal(rs.getInt(1));
+                    }
+                }
+                return true;
+            }
+        } catch (SQLException e) {
             System.out.println("Erro ao inserir local: " + e.getMessage());
         }
+        return false;
     }
 
-    public Local consultarPorId(int idLocal){
+    public Local consultarPorId(int idLocal) {
         String sql = """
             SELECT ID_LOCAL, NOME, DESCRICAO
             FROM LOCAIS
@@ -48,13 +59,13 @@ public class LocalDAO {
                     return l;
                 }
             }
-        } catch (SQLException e){
+        } catch (SQLException e) {
             System.out.println("Erro ao consultar local: " + e.getMessage());
         }
         return null;
     }
 
-    public Local consultarPorNome(String nomeLocal){
+    public Local consultarPorNome(String nomeLocal) {
         String sql = """
             SELECT ID_LOCAL, NOME, DESCRICAO
             FROM LOCAIS
@@ -75,24 +86,23 @@ public class LocalDAO {
                     return l;
                 }
             }
-        } catch (SQLException e){
+        } catch (SQLException e) {
             System.out.println("Erro ao consultar local: " + e.getMessage());
         }
         return null;
     }
 
-    public boolean excluirLocal(int idLocal){
+    public boolean excluirLocal(int idLocal) {
         String sql = "DELETE FROM LOCAIS WHERE ID_LOCAL = ?";
 
         try (Connection conn = ConexaoBD.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)){
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, idLocal);
             int linhasAfetadas = stmt.executeUpdate();
-            System.out.println("Excluido!");
             return linhasAfetadas > 0;
 
-        }catch (SQLException e){
+        } catch (SQLException e) {
             System.out.println("Erro ao excluir local: " + e.getMessage());
             return false;
         }
@@ -115,26 +125,45 @@ public class LocalDAO {
         }
     }
 
-    public List<Local> listarTodos(){
-        ArrayList<Local> locais = new ArrayList<>();
+    public List<Local> listarTodos() {
+        List<Local> locais = new ArrayList<>();
 
         String sql = "SELECT ID_LOCAL, NOME, DESCRICAO FROM LOCAIS";
 
-        try(Connection conn = ConexaoBD.getConnection();
-            PreparedStatement stmt= conn.prepareStatement(sql);
-            ResultSet rs = stmt.executeQuery();){
+        try (Connection conn = ConexaoBD.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
 
-            while(rs.next()){
+            while (rs.next()) {
                 Local l = new Local();
                 l.setIdLocal(rs.getInt("ID_LOCAL"));
                 l.setNomeLocal(rs.getString("NOME"));
                 l.setDescricao(rs.getString("DESCRICAO"));
-
                 locais.add(l);
             }
-        }catch (SQLException e){
-            System.out.println("Erro ao listar: " + e.getMessage());
+        } catch (SQLException e) {
+            System.out.println("Erro ao listar locais: " + e.getMessage());
         }
         return locais;
+    }
+
+    public boolean consultarSeExiste(String nomeLocal) {
+        String sql = "SELECT COUNT(*) FROM LOCAIS WHERE NOME = ?";
+
+        try (Connection conn = ConexaoBD.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, nomeLocal);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    int count = rs.getInt(1);
+                    return count > 0;
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Erro ao verificar existência do local: " + e.getMessage());
+        }
+        return false;
     }
 }
