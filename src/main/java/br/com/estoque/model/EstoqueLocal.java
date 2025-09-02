@@ -54,7 +54,7 @@ public class EstoqueLocal {
         return "EstoqueLocal{" +
                 "idEstoqueLocal=" + idEstoqueLocal +
                 ", idProduto=" + idProduto +
-                ", idLocal" + idLocal +
+                ", idLocal=" + idLocal +
                 ", Quantidade=" + quantidade +
                 '}';
     }
