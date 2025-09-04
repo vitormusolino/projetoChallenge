@@ -7,7 +7,7 @@ import java.sql.*;
 
 public class EstoqueLocalDAO {
 
-    public boolean inserirOuSomar(EstoqueLocal estoqueLocal){
+    public boolean inserirOuSomar(EstoqueLocal estoqueLocal) {
         Connection conn = null;
         try {
             conn = ConexaoBD.getConnection();
@@ -18,7 +18,7 @@ public class EstoqueLocalDAO {
             selectStmt.setInt(2, estoqueLocal.getIdLocal());
             ResultSet rs = selectStmt.executeQuery();
 
-            if(rs.next()){
+            if (rs.next()) {
                 int idEstoque = rs.getInt("ID_ESTOQUE");
                 int quantidadeAtual = rs.getInt("QUANTIDADE");
                 int novaQuantidade = quantidadeAtual + estoqueLocal.getQuantidade();
@@ -32,25 +32,33 @@ public class EstoqueLocalDAO {
                 estoqueLocal.setIdEstoqueLocal(idEstoque);
                 return linhas > 0;
             } else {
-                String insertSql = "INSERT INTO ESTOQUE_LOCAL (ID_ESTOQUE, ID_PRODUTO, ID_LOCAL, QUANTIDADE) VALUES (SEQ_ESTOQUE.NEXTVAL, ?, ?, ?)";
-                PreparedStatement insertStmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS);
-                insertStmt.setInt(1, estoqueLocal.getIdProduto());
-                insertStmt.setInt(2, estoqueLocal.getIdLocal());
-                insertStmt.setInt(3, estoqueLocal.getQuantidade());
+                String nextValSql = "SELECT SEQ_ESTOQUE_LOCAL.NEXTVAL FROM DUAL";
+                PreparedStatement seqStmt = conn.prepareStatement(nextValSql);
+                ResultSet seqRs = seqStmt.executeQuery();
+                int novoId = 0;
+                if (seqRs.next()) {
+                    novoId = seqRs.getInt(1);
+                }
+
+                String insertSql = "INSERT INTO ESTOQUE_LOCAL (ID_ESTOQUE, ID_PRODUTO, ID_LOCAL, QUANTIDADE) VALUES (?, ?, ?, ?)";
+                PreparedStatement insertStmt = conn.prepareStatement(insertSql);
+                insertStmt.setInt(1, novoId);
+                insertStmt.setInt(2, estoqueLocal.getIdProduto());
+                insertStmt.setInt(3, estoqueLocal.getIdLocal());
+                insertStmt.setInt(4, estoqueLocal.getQuantidade());
                 int linhas = insertStmt.executeUpdate();
 
-                if(linhas > 0){
-                    ResultSet rsKeys = insertStmt.getGeneratedKeys();
-                    if(rsKeys.next()){
-                        estoqueLocal.setIdEstoqueLocal(rsKeys.getInt(1));
-                    }
+                if (linhas > 0) {
                     conn.commit();
+                    estoqueLocal.setIdEstoqueLocal(novoId);
                     return true;
                 }
             }
 
         } catch (SQLException e) {
-            try { if(conn != null) conn.rollback(); } catch (SQLException ignored){}
+            try {
+                if (conn != null) conn.rollback();
+            } catch (SQLException ignored) {}
             System.out.println("Erro no inserirOuSomar: " + e.getMessage());
         } finally {
             ConexaoBD.close(conn);
