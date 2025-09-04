@@ -5,14 +5,15 @@ import br.com.estoque.model.EstoqueLocal;
 
 public class EstoqueLocalMain {
     public static void main(String[] args) {
-        EstoqueLocal estoqueLocal = new EstoqueLocal(24,1,20);
-        EstoqueLocalDAO estoqueLocalDAO = new EstoqueLocalDAO();
+        EstoqueLocal estoqueLocal = new EstoqueLocal(1, 1, 5);
+        EstoqueLocalDAO dao = new EstoqueLocalDAO();
 
-        boolean ok = estoqueLocalDAO.inserir(estoqueLocal);
+        System.out.println("Tentando inserir ou somar...");
+        boolean ok = dao.inserirOuSomar(estoqueLocal);
         if(ok){
-            System.out.println("Inserido com id = " + estoqueLocal.getIdEstoqueLocal());
-        } else{
-            System.out.println("Produto não inserido");
+            System.out.println("Operação realizada com sucesso. ID_ESTOQUE = " + estoqueLocal.getIdEstoqueLocal());
+        } else {
+            System.out.println("Falha na operação.");
         }
     }
 }
