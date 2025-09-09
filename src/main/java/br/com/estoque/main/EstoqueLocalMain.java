@@ -8,12 +8,6 @@ public class EstoqueLocalMain {
         EstoqueLocal estoqueLocal = new EstoqueLocal(1, 2, 20);
         EstoqueLocalDAO dao = new EstoqueLocalDAO();
 
-        System.out.println("Tentando inserir ou somar...");
-        boolean ok = dao.inserirOuSomar(estoqueLocal);
-        if(ok){
-            System.out.println("Operação realizada com sucesso. ID_ESTOQUE = " + estoqueLocal.getIdEstoqueLocal());
-        } else {
-            System.out.println("Falha na operação.");
-        }
-    }
-}
+
+        dao.transferir(1, 1,2,20);
+}}

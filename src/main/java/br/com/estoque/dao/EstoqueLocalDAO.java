@@ -65,4 +65,98 @@ public class EstoqueLocalDAO {
         }
         return false;
     }
+
+    public boolean transferir(int idProduto, int idOrigem, int idDestino, int quantidade){
+        Connection conn = null;
+        try{
+            conn = ConexaoBD.getConnection();
+
+            String selOrigem = "SELECT ID_ESTOQUE, QUANTIDADE FROM ESTOQUE_LOCAL WHERE ID_PRODUTO = ? AND ID_LOCAL = ?";
+
+            try(PreparedStatement psSelOrigem = conn.prepareStatement(selOrigem)){
+                psSelOrigem.setInt(1, idProduto);
+                psSelOrigem.setInt(2, idOrigem);
+
+                try(ResultSet rsOrigem = psSelOrigem.executeQuery()){
+                    if(!rsOrigem.next()){
+                        conn.rollback();
+                        return false;
+                    }
+                    int idEstoqueOrigem = rsOrigem.getInt("ID_ESTOQUE");
+                    int qtdAtualOrigem = rsOrigem.getInt("QUANTIDADE");
+                    if(qtdAtualOrigem < quantidade){
+                        conn.rollback();
+                        return false;
+                    }
+
+                    String updOrigem = "UPDATE ESTOQUE_LOCAL SET QUANTIDADE = ? WHERE ID_ESTOQUE = ?";
+                    try(PreparedStatement psUpdOrig =  conn.prepareStatement(updOrigem)){
+                        psUpdOrig.setInt(1, qtdAtualOrigem - quantidade);
+                        psUpdOrig.setInt(2, idEstoqueOrigem);
+                        int linhas = psUpdOrig.executeUpdate();
+                        if(linhas == 0 ){
+                            conn.rollback();
+                            return false;
+                        }
+                    }
+                }
+
+            }
+            String selDestino = "SELECT ID_ESTOQUE, QUANTIDADE FROM ESTOQUE_LOCAL WHERE ID_PRODUTO = ? AND ID_LOCAL = ?";
+            try(PreparedStatement psSelDst = conn.prepareStatement(selDestino)){
+                psSelDst.setInt(1, idProduto);
+                psSelDst.setInt(2, idDestino);
+                try(ResultSet rsDst = psSelDst.executeQuery()){
+                    if(rsDst.next()){
+                        int idEstoqueDst = rsDst.getInt("ID_ESTOQUE");
+                        int qtdAtualDst = rsDst.getInt("QUANTIDADE");
+                        String updDst = "UPDATE ESTOQUE_LOCAL SET QUANTIDADE = ? WHERE ID_ESTOQUE = ?";
+
+                        try(PreparedStatement psUpdDst = conn.prepareStatement(updDst)){
+                            psUpdDst.setInt(1, qtdAtualDst + quantidade);
+                            psUpdDst.setInt(2, idEstoqueDst);
+                            int linhas = psUpdDst.executeUpdate();
+                            if (linhas == 0) {
+                                conn.rollback();
+                                return false;
+                            }
+                        }
+                    }else{
+                        int novoId = 0;
+                        String seqSql = "SELECT SEQ_ESTOQUE_LOCAL.NEXTVAL FROM DUAL";
+                        try (PreparedStatement psSeq = conn.prepareStatement(seqSql);
+                             ResultSet rsSeq = psSeq.executeQuery()) {
+                            if (rsSeq.next()) {
+                                novoId = rsSeq.getInt(1);
+                            } else {
+                                conn.rollback();
+                                return false;
+                            }
+                        }
+
+                        String insertDst = "INSERT INTO ESTOQUE_LOCAL (ID_ESTOQUE, ID_PRODUTO, ID_LOCAL, QUANTIDADE) VALUES (?, ?, ?, ?)";
+                        try(PreparedStatement psIns = conn.prepareStatement(insertDst)){
+                            psIns.setInt(1, novoId);
+                            psIns.setInt(2, idProduto);
+                            psIns.setInt(3, idDestino);
+                            psIns.setInt(4, quantidade);
+                            int linhas = psIns.executeUpdate();
+                            if (linhas == 0) {
+                                conn.rollback();
+                                return false;
+                            }
+                    }
+                }
+            }
+        }
+            conn.commit();
+            return true;
+        }catch (SQLException e){
+            try{if(conn!=null && !conn.getAutoCommit()) conn.rollback(); } catch (SQLException ignored) {}
+            System.out.println("Erro na transferência: " + e.getMessage());
+            return false;
+        }finally {
+            ConexaoBD.close(conn);
+        }
+    }
 }
