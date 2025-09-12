@@ -162,6 +162,61 @@ public class EstoqueLocalDAO {
         }
     }
 
+    public List<EstoqueLocal> listarTodos() {
+        Connection conn = null;
+        List<EstoqueLocal> lista = new ArrayList<>();
+        try {
+            conn = ConexaoBD.getConnection();
+            String sql = "SELECT ID_ESTOQUE, ID_PRODUTO, ID_LOCAL, QUANTIDADE FROM ESTOQUE_LOCAL";
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        EstoqueLocal e = new EstoqueLocal(
+                                rs.getInt("ID_ESTOQUE"),
+                                rs.getInt("ID_PRODUTO"),
+                                rs.getInt("ID_LOCAL"),
+                                rs.getInt("QUANTIDADE")
+                        );
+                        lista.add(e);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Erro no listarPorLocal: " + e.getMessage());
+        } finally {
+            ConexaoBD.close(conn);
+        }
+        return lista;
+    }
+
+    public List<EstoqueLocal> listarPorProduto(int idProduto) {
+        Connection conn = null;
+        List<EstoqueLocal> lista = new ArrayList<>();
+        try {
+            conn = ConexaoBD.getConnection();
+            String sql = "SELECT ID_ESTOQUE, ID_PRODUTO, ID_LOCAL, QUANTIDADE FROM ESTOQUE_LOCAL WHERE ID_PRODUTO = ?";
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setInt(1, idProduto);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        EstoqueLocal e = new EstoqueLocal(
+                                rs.getInt("ID_ESTOQUE"),
+                                rs.getInt("ID_PRODUTO"),
+                                rs.getInt("ID_LOCAL"),
+                                rs.getInt("QUANTIDADE")
+                        );
+                        lista.add(e);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Erro no listarPorLocal: " + e.getMessage());
+        } finally {
+            ConexaoBD.close(conn);
+        }
+        return lista;
+    }
+
     public List<EstoqueLocal> listarPorLocal(int idLocal) {
         Connection conn = null;
         List<EstoqueLocal> lista = new ArrayList<>();

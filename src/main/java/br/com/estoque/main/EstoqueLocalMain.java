@@ -12,5 +12,10 @@ public class EstoqueLocalMain {
         System.out.println(dao.listarPorLocal(2));
         System.out.println(dao.listarPorLocal(3));
 
+        System.out.println(dao.listarTodos());
+
+        System.out.println(dao.listarPorProduto(1));
+        System.out.println(dao.listarPorProduto(61));
+
 
 }}
