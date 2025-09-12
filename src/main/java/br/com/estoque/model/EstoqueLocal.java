@@ -15,6 +15,14 @@ public class EstoqueLocal {
         this.quantidade = quantidade;
     }
 
+    public EstoqueLocal(int idEstoque, int idProduto, int idLocal, int quantidade) {
+        this.idEstoqueLocal = idEstoque;
+        this.idProduto = idProduto;
+        this.idLocal = idLocal;
+        this.quantidade = quantidade;
+    }
+
+
     public Integer getQuantidade() {
         return quantidade;
     }

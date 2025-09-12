@@ -4,6 +4,8 @@ import br.com.estoque.conexao.ConexaoBD;
 import br.com.estoque.model.EstoqueLocal;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class EstoqueLocalDAO {
 
@@ -159,4 +161,33 @@ public class EstoqueLocalDAO {
             ConexaoBD.close(conn);
         }
     }
+
+    public List<EstoqueLocal> listarPorLocal(int idLocal) {
+        Connection conn = null;
+        List<EstoqueLocal> lista = new ArrayList<>();
+        try {
+            conn = ConexaoBD.getConnection();
+            String sql = "SELECT ID_ESTOQUE, ID_PRODUTO, ID_LOCAL, QUANTIDADE FROM ESTOQUE_LOCAL WHERE ID_LOCAL = ?";
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setInt(1, idLocal);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        EstoqueLocal e = new EstoqueLocal(
+                                rs.getInt("ID_ESTOQUE"),
+                                rs.getInt("ID_PRODUTO"),
+                                rs.getInt("ID_LOCAL"),
+                                rs.getInt("QUANTIDADE")
+                        );
+                        lista.add(e);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Erro no listarPorLocal: " + e.getMessage());
+        } finally {
+            ConexaoBD.close(conn);
+        }
+        return lista;
+    }
+
 }

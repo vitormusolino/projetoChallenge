@@ -8,6 +8,9 @@ public class EstoqueLocalMain {
         EstoqueLocal estoqueLocal = new EstoqueLocal(1, 2, 20);
         EstoqueLocalDAO dao = new EstoqueLocalDAO();
 
+        System.out.println(dao.listarPorLocal(1));
+        System.out.println(dao.listarPorLocal(2));
+        System.out.println(dao.listarPorLocal(3));
 
-        dao.transferir(1, 1,2,20);
+
 }}
