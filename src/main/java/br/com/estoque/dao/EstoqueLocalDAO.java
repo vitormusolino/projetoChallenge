@@ -68,53 +68,118 @@ public class EstoqueLocalDAO {
         return false;
     }
 
-    public boolean transferir(int idProduto, int idOrigem, int idDestino, int quantidade){
+    public boolean atualizar(EstoqueLocal estoqueLocal) {
         Connection conn = null;
-        try{
+        try {
+            conn = ConexaoBD.getConnection();
+            String sql = "UPDATE ESTOQUE_LOCAL SET ID_PRODUTO = ?, ID_LOCAL = ?, QUANTIDADE = ? WHERE ID_ESTOQUE = ?";
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setInt(1, estoqueLocal.getIdProduto());
+                ps.setInt(2, estoqueLocal.getIdLocal());
+                ps.setInt(3, estoqueLocal.getQuantidade());
+                ps.setInt(4, estoqueLocal.getIdEstoqueLocal());
+                int linhas = ps.executeUpdate();
+                conn.commit();
+                return linhas > 0;
+            }
+        } catch (SQLException e) {
+            try { if (conn != null) conn.rollback(); } catch (SQLException ignored) {}
+            System.out.println("Erro no atualizar: " + e.getMessage());
+        } finally {
+            ConexaoBD.close(conn);
+        }
+        return false;
+    }
+
+    public boolean remover(int idEstoque) {
+        Connection conn = null;
+        try {
+            conn = ConexaoBD.getConnection();
+            String sql = "DELETE FROM ESTOQUE_LOCAL WHERE ID_ESTOQUE = ?";
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setInt(1, idEstoque);
+                int linhas = ps.executeUpdate();
+                conn.commit();
+                return linhas > 0;
+            }
+        } catch (SQLException e) {
+            try { if (conn != null) conn.rollback(); } catch (SQLException ignored) {}
+            System.out.println("Erro no remover: " + e.getMessage());
+        } finally {
+            ConexaoBD.close(conn);
+        }
+        return false;
+    }
+
+    public EstoqueLocal buscarPorId(int idEstoque) {
+        Connection conn = null;
+        try {
+            conn = ConexaoBD.getConnection();
+            String sql = "SELECT ID_ESTOQUE, ID_PRODUTO, ID_LOCAL, QUANTIDADE FROM ESTOQUE_LOCAL WHERE ID_ESTOQUE = ?";
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setInt(1, idEstoque);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        return new EstoqueLocal(
+                                rs.getInt("ID_ESTOQUE"),
+                                rs.getInt("ID_PRODUTO"),
+                                rs.getInt("ID_LOCAL"),
+                                rs.getInt("QUANTIDADE")
+                        );
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Erro no buscarPorId: " + e.getMessage());
+        } finally {
+            ConexaoBD.close(conn);
+        }
+        return null;
+    }
+
+    public boolean transferir(int idProduto, int idOrigem, int idDestino, int quantidade) {
+        Connection conn = null;
+        try {
             conn = ConexaoBD.getConnection();
 
             String selOrigem = "SELECT ID_ESTOQUE, QUANTIDADE FROM ESTOQUE_LOCAL WHERE ID_PRODUTO = ? AND ID_LOCAL = ?";
-
-            try(PreparedStatement psSelOrigem = conn.prepareStatement(selOrigem)){
+            try (PreparedStatement psSelOrigem = conn.prepareStatement(selOrigem)) {
                 psSelOrigem.setInt(1, idProduto);
                 psSelOrigem.setInt(2, idOrigem);
-
-                try(ResultSet rsOrigem = psSelOrigem.executeQuery()){
-                    if(!rsOrigem.next()){
+                try (ResultSet rsOrigem = psSelOrigem.executeQuery()) {
+                    if (!rsOrigem.next()) {
                         conn.rollback();
                         return false;
                     }
                     int idEstoqueOrigem = rsOrigem.getInt("ID_ESTOQUE");
                     int qtdAtualOrigem = rsOrigem.getInt("QUANTIDADE");
-                    if(qtdAtualOrigem < quantidade){
+                    if (qtdAtualOrigem < quantidade) {
                         conn.rollback();
                         return false;
                     }
-
                     String updOrigem = "UPDATE ESTOQUE_LOCAL SET QUANTIDADE = ? WHERE ID_ESTOQUE = ?";
-                    try(PreparedStatement psUpdOrig =  conn.prepareStatement(updOrigem)){
+                    try (PreparedStatement psUpdOrig = conn.prepareStatement(updOrigem)) {
                         psUpdOrig.setInt(1, qtdAtualOrigem - quantidade);
                         psUpdOrig.setInt(2, idEstoqueOrigem);
                         int linhas = psUpdOrig.executeUpdate();
-                        if(linhas == 0 ){
+                        if (linhas == 0) {
                             conn.rollback();
                             return false;
                         }
                     }
                 }
-
             }
+
             String selDestino = "SELECT ID_ESTOQUE, QUANTIDADE FROM ESTOQUE_LOCAL WHERE ID_PRODUTO = ? AND ID_LOCAL = ?";
-            try(PreparedStatement psSelDst = conn.prepareStatement(selDestino)){
+            try (PreparedStatement psSelDst = conn.prepareStatement(selDestino)) {
                 psSelDst.setInt(1, idProduto);
                 psSelDst.setInt(2, idDestino);
-                try(ResultSet rsDst = psSelDst.executeQuery()){
-                    if(rsDst.next()){
+                try (ResultSet rsDst = psSelDst.executeQuery()) {
+                    if (rsDst.next()) {
                         int idEstoqueDst = rsDst.getInt("ID_ESTOQUE");
                         int qtdAtualDst = rsDst.getInt("QUANTIDADE");
                         String updDst = "UPDATE ESTOQUE_LOCAL SET QUANTIDADE = ? WHERE ID_ESTOQUE = ?";
-
-                        try(PreparedStatement psUpdDst = conn.prepareStatement(updDst)){
+                        try (PreparedStatement psUpdDst = conn.prepareStatement(updDst)) {
                             psUpdDst.setInt(1, qtdAtualDst + quantidade);
                             psUpdDst.setInt(2, idEstoqueDst);
                             int linhas = psUpdDst.executeUpdate();
@@ -123,7 +188,7 @@ public class EstoqueLocalDAO {
                                 return false;
                             }
                         }
-                    }else{
+                    } else {
                         int novoId = 0;
                         String seqSql = "SELECT SEQ_ESTOQUE_LOCAL.NEXTVAL FROM DUAL";
                         try (PreparedStatement psSeq = conn.prepareStatement(seqSql);
@@ -135,9 +200,8 @@ public class EstoqueLocalDAO {
                                 return false;
                             }
                         }
-
                         String insertDst = "INSERT INTO ESTOQUE_LOCAL (ID_ESTOQUE, ID_PRODUTO, ID_LOCAL, QUANTIDADE) VALUES (?, ?, ?, ?)";
-                        try(PreparedStatement psIns = conn.prepareStatement(insertDst)){
+                        try (PreparedStatement psIns = conn.prepareStatement(insertDst)) {
                             psIns.setInt(1, novoId);
                             psIns.setInt(2, idProduto);
                             psIns.setInt(3, idDestino);
@@ -147,42 +211,44 @@ public class EstoqueLocalDAO {
                                 conn.rollback();
                                 return false;
                             }
+                        }
                     }
                 }
             }
-        }
+
             conn.commit();
             return true;
-        }catch (SQLException e){
-            try{if(conn!=null && !conn.getAutoCommit()) conn.rollback(); } catch (SQLException ignored) {}
+
+        } catch (SQLException e) {
+            try { if (conn != null && !conn.getAutoCommit()) conn.rollback(); } catch (SQLException ignored) {}
             System.out.println("Erro na transferência: " + e.getMessage());
             return false;
-        }finally {
+        } finally {
             ConexaoBD.close(conn);
         }
     }
 
+
     public List<EstoqueLocal> listarTodos() {
-        Connection conn = null;
         List<EstoqueLocal> lista = new ArrayList<>();
+        Connection conn = null;
         try {
             conn = ConexaoBD.getConnection();
             String sql = "SELECT ID_ESTOQUE, ID_PRODUTO, ID_LOCAL, QUANTIDADE FROM ESTOQUE_LOCAL";
-            try (PreparedStatement ps = conn.prepareStatement(sql)) {
-                try (ResultSet rs = ps.executeQuery()) {
-                    while (rs.next()) {
-                        EstoqueLocal e = new EstoqueLocal(
-                                rs.getInt("ID_ESTOQUE"),
-                                rs.getInt("ID_PRODUTO"),
-                                rs.getInt("ID_LOCAL"),
-                                rs.getInt("QUANTIDADE")
-                        );
-                        lista.add(e);
-                    }
+            try (PreparedStatement ps = conn.prepareStatement(sql);
+                 ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    EstoqueLocal e = new EstoqueLocal(
+                            rs.getInt("ID_ESTOQUE"),
+                            rs.getInt("ID_PRODUTO"),
+                            rs.getInt("ID_LOCAL"),
+                            rs.getInt("QUANTIDADE")
+                    );
+                    lista.add(e);
                 }
             }
         } catch (SQLException e) {
-            System.out.println("Erro no listarPorLocal: " + e.getMessage());
+            System.out.println("Erro no listarTodos: " + e.getMessage());
         } finally {
             ConexaoBD.close(conn);
         }
@@ -190,8 +256,8 @@ public class EstoqueLocalDAO {
     }
 
     public List<EstoqueLocal> listarPorProduto(int idProduto) {
-        Connection conn = null;
         List<EstoqueLocal> lista = new ArrayList<>();
+        Connection conn = null;
         try {
             conn = ConexaoBD.getConnection();
             String sql = "SELECT ID_ESTOQUE, ID_PRODUTO, ID_LOCAL, QUANTIDADE FROM ESTOQUE_LOCAL WHERE ID_PRODUTO = ?";
@@ -210,7 +276,7 @@ public class EstoqueLocalDAO {
                 }
             }
         } catch (SQLException e) {
-            System.out.println("Erro no listarPorLocal: " + e.getMessage());
+            System.out.println("Erro no listarPorProduto: " + e.getMessage());
         } finally {
             ConexaoBD.close(conn);
         }
@@ -218,8 +284,8 @@ public class EstoqueLocalDAO {
     }
 
     public List<EstoqueLocal> listarPorLocal(int idLocal) {
-        Connection conn = null;
         List<EstoqueLocal> lista = new ArrayList<>();
+        Connection conn = null;
         try {
             conn = ConexaoBD.getConnection();
             String sql = "SELECT ID_ESTOQUE, ID_PRODUTO, ID_LOCAL, QUANTIDADE FROM ESTOQUE_LOCAL WHERE ID_LOCAL = ?";
@@ -244,5 +310,4 @@ public class EstoqueLocalDAO {
         }
         return lista;
     }
-
 }
